@@ -3,7 +3,14 @@
 > 没有目的地也能出发——打开第 N 天的全国天气预报地图，按"想看的天气/景观"一键筛选，在点亮的区域里反选目的地。
 > 本 Demo 对应 `PRD_全国天气预测地图_v1.md` 的 M1 里程碑，全部使用 **Open-Meteo 真实预报数据**。
 
-## 快速开始
+## 在线访问（Cloudflare Pages）
+
+- **Web 版**：https://weather-scout.pages.dev/
+- **H5 版**：https://weather-scout.pages.dev/?mode=h5 （手机直接访问会自动适配，无需参数）
+- **部署管线**：push 到 GitHub `main` 分支 → Cloudflare Pages 自动构建上线（约 1 分钟）
+- **底图策略**：主用高德瓦片（中文标注）；若访问端无法连接高德（少数弱网/受限环境），4 秒后自动切换 Esri 备用底图
+
+## 本地使用
 
 **双击 `index.html` 即可使用**（纯静态站点，无需服务器；Leaflet 已本地化）。
 
