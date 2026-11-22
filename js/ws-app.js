@@ -87,6 +87,11 @@
 
   /* ================= 地图 ================= */
   let map, layerGrid, layerLocs, layerRings, markersById = {};
+  let baseMode = 'amap', mlmap = null, amapLayer, esriStreetLayer, satLayer;
+  let amapLoaded = 0, amapErrored = 0, amapWatchTimer = null;
+  const OFM_LIBERTY = 'https://tiles.openfreemap.org/styles/liberty';
+  const OFM_POSITRON = 'https://tiles.openfreemap.org/styles/positron';
+
   function initMap() {
     map = L.map('map', {
       center: [35.2, 104.5], zoom: 4, minZoom: 4, maxZoom: 11,
@@ -94,30 +99,107 @@
       attributionControl: false, zoomControl: true,
     });
     L.control.attribution({ prefix: false })
-      .addAttribution('底图 © 高德地图（演示，GCJ-02）· 备用 © Esri · 数据 © <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>')
+      .addAttribution('底图：高德 / OpenFreeMap（矢量）/ Esri（卫星·备用） · 数据 © <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>')
       .addTo(map);
-    // 主底图：高德（中文标注）；4 秒内无成功瓦片则自动切备用（ArcGIS，全球可达）
-    const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
       subdomains: '1234', maxZoom: 11,
     }).addTo(map);
-    const esriLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 11,
-    });
-    let amapLoaded = 0, amapErrored = 0;
-    amapLayer.on('tileload', () => { amapLoaded++; });
-    amapLayer.on('tileerror', () => { amapErrored++; });
-    setTimeout(() => {
-      if (amapLoaded === 0 && amapErrored > 0) {
-        map.removeLayer(amapLayer);
-        esriLayer.addTo(map);
-        const lg = $('#legend');
-        if (lg) lg.insertAdjacentHTML('beforeend', '<div class="lg-row small">⚠ 当前使用备用底图（Esri，英文标注）——你的网络暂无法连接高德瓦片。</div>');
-      }
-    }, 4000);
+    amapLayerTileHooks();
+    esriStreetLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 11 });
+    satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 11 });
+    watchAmapFallback();
     L.control.scale({ imperial: false }).addTo(map);
     layerRings = L.layerGroup().addTo(map);
     layerGrid = L.layerGroup().addTo(map);
     layerLocs = L.layerGroup().addTo(map);
+    // 底图切换按钮
+    document.querySelectorAll('#baseSwitch button').forEach(b => {
+      b.addEventListener('click', () => setBase(b.dataset.base));
+    });
+  }
+
+  /* ---- 高德备用监测：4 秒内无成功瓦片且出现错误 → 切 ArcGIS 街道图 ---- */
+  function watchAmapFallback() {
+    clearTimeout(amapWatchTimer);
+    amapLoaded = 0; amapErrored = 0;
+    amapWatchTimer = setTimeout(() => {
+      if (baseMode !== 'amap') return;
+      if (amapLoaded === 0 && amapErrored > 0) {
+        if (map.hasLayer(amapLayer)) map.removeLayer(amapLayer);
+        esriStreetLayer.addTo(map);
+        const lg = $('#legend');
+        if (lg && !document.querySelector('.lg-fallback-note')) {
+          lg.insertAdjacentHTML('beforeend', '<div class="lg-row small lg-fallback-note">⚠ 当前使用备用底图（Esri，英文标注）——你的网络暂无法连接高德瓦片。</div>');
+        }
+      }
+      }, 4000);
+  }
+
+  /** 绑定高德瓦片成功/失败计数（off+on 保证幂等，重复切换不叠加监听） */
+  function amapLayerTileHooks() {
+    amapLayer.off('tileload').on('tileload', () => { amapLoaded++; });
+    amapLayer.off('tileerror').on('tileerror', () => { amapErrored++; });
+  }
+
+  /* ---- 矢量底图（MapLibre GL 置于 Leaflet 之下，随 Leaflet 视图同步） ---- */
+  function syncMl() {
+    if (!mlmap || baseMode[0] !== 'v') return;
+    const c = map.getCenter();
+    mlmap.jumpTo({ center: [c.lng, c.lat], zoom: map.getZoom() + 1 }); // 512px 瓦片体系，zoom 偏移 +1
+  }
+  function showMl(styleUrl) {
+    if (!window.maplibregl) return;
+    let div = document.getElementById('mlmap');
+    try {
+      if (!div) {
+        div = document.createElement('div');
+        div.id = 'mlmap';
+        const wrap = document.querySelector('#mapWrap');
+        wrap.insertBefore(div, wrap.querySelector('#map'));
+        mlmap = new maplibregl.Map({
+          container: 'mlmap', style: styleUrl, interactive: false,
+          attributionControl: false,
+          center: [map.getCenter().lng, map.getCenter().lat], zoom: map.getZoom() + 1,
+        });
+        mlmap._wsStyle = styleUrl;
+        map.on('move', syncMl);
+        map.on('zoom', syncMl);
+        window.addEventListener('resize', () => { if (mlmap) mlmap.resize(); });
+      } else {
+        div.style.visibility = 'visible';
+        if (mlmap && mlmap._wsStyle !== styleUrl) { mlmap.setStyle(styleUrl); mlmap._wsStyle = styleUrl; }
+      }
+      setTimeout(() => { if (mlmap) { mlmap.resize(); syncMl(); } }, 80);
+    } catch (e) {
+      console.warn('矢量底图初始化失败（可能是 WebGL 不可用）：', e.message);
+    }
+  }
+  function hideMl() {
+    const d = document.getElementById('mlmap');
+    if (d) d.style.visibility = 'hidden';
+  }
+
+  /** 切换底图：amap 高德 / vlib 矢量清晰 / vpos 矢量浅灰 / sat 卫星 */
+  function setBase(mode) {
+    baseMode = mode;
+    document.querySelectorAll('#baseSwitch button').forEach(b => b.classList.toggle('on', b.dataset.base === mode));
+    document.querySelectorAll('.lg-fallback-note').forEach(el => el.remove());
+    const wrap = document.querySelector('#mapWrap');
+    [amapLayer, esriStreetLayer, satLayer].forEach(l => { if (map.hasLayer(l)) map.removeLayer(l); });
+    if (mode === 'amap') {
+      wrap.classList.remove('vector-base');
+      hideMl();
+      amapLayer.addTo(map);
+      amapLayerTileHooks();
+      watchAmapFallback();
+    } else if (mode === 'sat') {
+      wrap.classList.remove('vector-base');
+      hideMl();
+      satLayer.addTo(map);
+    } else {
+      wrap.classList.add('vector-base');
+      showMl(mode === 'vlib' ? OFM_LIBERTY : OFM_POSITRON);
+    }
   }
 
   function drawRings() {

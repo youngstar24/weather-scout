@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>追景地图 WeatherScout · 全国天气预测地图 Demo</title>
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="vendor/maplibre/maplibre-gl.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -45,6 +46,12 @@
 <main id="main">
   <div id="mapWrap">
     <div id="map"></div>
+    <div id="baseSwitch" title="切换地图底图">
+      <button data-base="amap" class="on">高德</button>
+      <button data-base="vlib">矢量·清晰</button>
+      <button data-base="vpos">矢量·浅灰</button>
+      <button data-base="sat">卫星</button>
+    </div>
     <div id="legend"></div>
   </div>
   <aside id="candPanel">
@@ -81,6 +88,7 @@
 <div id="toast"></div>
 
 <script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/maplibre/maplibre-gl.js"></script>
 <script src="data/ws-data.js"></script>
 <script src="data/ws-cache.js"></script>
 <script src="js/ws-model.js"></script>

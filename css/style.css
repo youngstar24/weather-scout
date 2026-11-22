@@ -75,6 +75,16 @@ button { font-family: inherit; cursor: pointer; }
 #main { flex: 1; display: flex; min-height: 0; }
 #mapWrap { flex: 1; position: relative; min-width: 0; }
 #map { position: absolute; inset: 0; background: #e8ecef; }
+#mlmap { position: absolute; inset: 0; }
+#mapWrap.vector-base #map { background: transparent; }
+#baseSwitch {
+  position: absolute; top: 10px; right: 10px; z-index: 600;
+  background: rgba(255,255,255,.95); border: 1px solid #e3e8ee; border-radius: 10px;
+  padding: 4px; display: flex; gap: 2px; box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+#baseSwitch button { border: none; background: none; padding: 5px 10px; font-size: 12px; border-radius: 8px; color: #5a6472; cursor: pointer; }
+#baseSwitch button.on { background: #2b6cb0; color: #fff; font-weight: 600; }
+@media (max-width: 960px) { #baseSwitch { top: 6px; right: 6px; } #baseSwitch button { padding: 4px 8px; font-size: 11px; } }
 #legend {
   position: absolute; left: 10px; bottom: 14px; z-index: 500;
   background: rgba(255,255,255,.94); border: 1px solid #e3e8ee; border-radius: 10px;
