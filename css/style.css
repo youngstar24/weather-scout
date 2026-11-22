@@ -75,8 +75,12 @@ button { font-family: inherit; cursor: pointer; }
 #main { flex: 1; display: flex; min-height: 0; }
 #mapWrap { flex: 1; position: relative; min-width: 0; }
 #map { position: absolute; inset: 0; background: #e8ecef; }
-#mlmap { position: absolute; inset: 0; }
-#mapWrap.vector-base #map { background: transparent; }
+#mapWrap.vector-base #map { background: radial-gradient(ellipse at 30% 20%, #12203c 0%, #0a1428 72%); }
+.prov-label {
+  background: none; border: none; color: rgba(160, 180, 205, 0.75);
+  font-size: 11px; font-weight: 600; text-align: center; white-space: nowrap;
+  text-shadow: 0 0 4px rgba(8, 21, 39, 0.9);
+}
 #baseSwitch {
   position: absolute; top: 10px; right: 10px; z-index: 600;
   background: rgba(255,255,255,.95); border: 1px solid #e3e8ee; border-radius: 10px;

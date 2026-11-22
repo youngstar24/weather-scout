@@ -87,42 +87,9 @@
 
   /* ================= 地图 ================= */
   let map, layerGrid, layerLocs, layerRings, markersById = {};
-  let baseMode = 'vdark', mlmap = null, amapLayer, esriStreetLayer, satLayer;
+  let baseMode = 'vdark', amapLayer, esriStreetLayer, satLayer;
   let amapLoaded = 0, amapErrored = 0, amapWatchTimer = null;
-
-  /** 暗夜矢量样式：深蓝底 + 省界/国界 + 省级中文标注（矢量瓦片来自 OpenFreeMap/OpenMapTiles，OSM 数据） */
-  const DARK_VECTOR_STYLE = {
-    version: 8,
-    glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
-    sources: { openmaptiles: { type: 'vector', url: 'https://tiles.openfreemap.org/planet' } },
-    layers: [
-      { id: 'ws-bg', type: 'background', paint: { 'background-color': '#0c1b2e' } },
-      { id: 'ws-water', type: 'fill', source: 'openmaptiles', 'source-layer': 'water',
-        filter: ['!=', ['get', 'brunnel'], 'tunnel'],
-        paint: { 'fill-color': '#081527', 'fill-opacity': 0.9 } },
-      { id: 'ws-adm1', type: 'line', source: 'openmaptiles', 'source-layer': 'boundary',
-        filter: ['all', ['>=', ['get', 'admin_level'], 3], ['<=', ['get', 'admin_level'], 6], ['!=', ['get', 'maritime'], 1]],
-        paint: { 'line-color': '#31517c', 'line-width': 0.8, 'line-opacity': 0.9 } },
-      { id: 'ws-adm0', type: 'line', source: 'openmaptiles', 'source-layer': 'boundary',
-        filter: ['all', ['==', ['get', 'admin_level'], 2], ['!=', ['get', 'maritime'], 1], ['!=', ['get', 'disputed'], 1]],
-        paint: { 'line-color': '#3f6699', 'line-width': 1.2, 'line-opacity': 0.95 } },
-      { id: 'ws-adm0-disputed', type: 'line', source: 'openmaptiles', 'source-layer': 'boundary',
-        filter: ['all', ['==', ['get', 'admin_level'], 2], ['!=', ['get', 'maritime'], 1], ['==', ['get', 'disputed'], 1]],
-        paint: { 'line-color': '#3f6699', 'line-dasharray': [1, 2], 'line-width': 1 } },
-      { id: 'ws-prov-label', type: 'symbol', source: 'openmaptiles', 'source-layer': 'place',
-        filter: ['==', ['get', 'class'], 'state'],
-        minzoom: 3,
-        layout: {
-          'text-field': ['coalesce', ['get', 'name:short'], ['get', 'name:nonlatin'], ['get', 'name']],
-          'text-font': ['Noto Sans Regular'],
-          'text-size': 13,
-          'text-letter-spacing': 0.15,
-          'text-max-width': 6,
-        },
-        paint: { 'text-color': '#8fa8c7', 'text-halo-color': 'rgba(8, 21, 39, 0.85)', 'text-halo-width': 1.2 },
-      },
-    ],
-  };
+  let provLayer = null, graticuleLayer = null, provLabelLayer = null;
 
   function initMap() {
     map = L.map('map', {
@@ -131,7 +98,7 @@
       attributionControl: false, zoomControl: true,
     });
     L.control.attribution({ prefix: false })
-      .addAttribution('底图：高德 / OpenFreeMap（矢量）/ Esri（卫星·备用） · 数据 © <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>')
+      .addAttribution('底图：自绘省界（暗夜矢量）/ 高德 / Esri（卫星） · 数据 © <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>')
       .addTo(map);
     amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
       subdomains: '1234', maxZoom: 11,
@@ -173,70 +140,69 @@
     amapLayer.off('tileerror').on('tileerror', () => { amapErrored++; });
   }
 
-  /* ---- 矢量底图（MapLibre GL 置于 Leaflet 之下，随 Leaflet 视图同步） ---- */
-  function syncMl() {
-    if (!mlmap || baseMode[0] !== 'v') return;
-    const c = map.getCenter();
-    mlmap.jumpTo({ center: [c.lng, c.lat], zoom: map.getZoom() + 1 }); // 512px 瓦片体系，zoom 偏移 +1
-  }
-  function showMl(styleUrl) {
-    if (!window.maplibregl) return;
-    let div = document.getElementById('mlmap');
-    try {
-      if (!div) {
-        div = document.createElement('div');
-        div.id = 'mlmap';
-        const wrap = document.querySelector('#mapWrap');
-        wrap.insertBefore(div, wrap.querySelector('#map'));
-        mlmap = new maplibregl.Map({
-          container: 'mlmap', style: styleUrl, interactive: false,
-          attributionControl: false,
-          center: [map.getCenter().lng, map.getCenter().lat], zoom: map.getZoom() + 1,
-        });
-        mlmap._wsStyle = styleUrl;
-        // 样式/瓦片错误转发（便于诊断；正常用户不会看到）
-        mlmap.on('error', (e) => {
-          const msg = (e && e.error && (e.error.message || String(e.error))) || String(e);
-          if (window.__errs) window.__errs.push('mlmap: ' + String(msg).slice(0, 150));
-        });
-        window._mlmap = mlmap;
-        map.on('move', syncMl);
-        map.on('zoom', syncMl);
-        window.addEventListener('resize', () => { if (mlmap) mlmap.resize(); });
-      } else {
-        div.style.visibility = 'visible';
-        if (mlmap && mlmap._wsStyle !== styleUrl) { mlmap.setStyle(styleUrl); mlmap._wsStyle = styleUrl; }
-      }
-      setTimeout(() => { if (mlmap) { mlmap.resize(); syncMl(); } }, 80);
-    } catch (e) {
-      console.warn('矢量底图初始化失败（可能是 WebGL 不可用）：', e.message);
+  /* ---- 暗夜矢量底图：本地省界数据绘制（借鉴参考示例 drawVectorBase，零外部瓦片依赖） ---- */
+  function ensureVectorLayers() {
+    if (provLayer || !window.WS_PROVINCES) return;
+    if (!map.getPane('wsProvBase')) {
+      map.createPane('wsProvBase'); map.getPane('wsProvBase').style.zIndex = 350; // 瓦片(200)之上、数据标记(400)之下
+      map.createPane('wsProvLabels'); map.getPane('wsProvLabels').style.zIndex = 360;
+    }
+    provLayer = L.layerGroup({ pane: 'wsProvBase' });
+    graticuleLayer = L.layerGroup({ pane: 'wsProvBase' });
+    provLabelLayer = L.layerGroup({ pane: 'wsProvLabels' });
+    const strip = n => n.replace(/(省|市|壮族自治区|回族自治区|维吾尔自治区|自治区|特别行政区)/, '');
+    window.WS_PROVINCES.forEach(p => {
+      p.r.forEach(ring => {
+        L.polygon(ring.map(pt => [pt[1], pt[0]]), {
+          pane: 'wsProvBase',
+          color: 'rgba(120, 180, 255, 0.35)', weight: 1,
+          fillColor: '#101d38', fillOpacity: 1,
+          interactive: false,
+        }).addTo(provLayer);
+      });
+      // 省名短标注：首个外环的均值质心（与参考示例同法）
+      const ring = p.r[0];
+      let sx = 0, sy = 0;
+      ring.forEach(pt => { sx += pt[0]; sy += pt[1]; });
+      const lat = sy / ring.length, lon = sx / ring.length;
+      if (lat < 6 || lon < 74) return; // 跳过南海诸岛等非省域要素
+      L.marker([lat, lon], {
+        pane: 'wsProvLabels',
+        icon: L.divIcon({ className: 'prov-label', html: strip(p.n), iconSize: null }),
+        interactive: false, keyboard: false,
+      }).addTo(provLabelLayer);
+    });
+    // 经纬网（每 10°）
+    for (let lon = 80; lon <= 130; lon += 10) {
+      L.polyline([[15, lon], [54, lon]], { color: 'rgba(140,170,220,.10)', weight: 1, interactive: false }).addTo(graticuleLayer);
+    }
+    for (let lat = 20; lat <= 50; lat += 10) {
+      L.polyline([[lat, 73], [lat, 135.5]], { color: 'rgba(140,170,220,.10)', weight: 1, interactive: false }).addTo(graticuleLayer);
     }
   }
-  function hideMl() {
-    const d = document.getElementById('mlmap');
-    if (d) d.style.visibility = 'hidden';
-  }
 
-  /** 切换底图：amap 高德 / vlib 矢量清晰 / vpos 矢量浅灰 / sat 卫星 */
+  /** 切换底图：vdark 暗夜矢量（默认）/ amap 高德 / sat 卫星 */
   function setBase(mode) {
     baseMode = mode;
     document.querySelectorAll('#baseSwitch button').forEach(b => b.classList.toggle('on', b.dataset.base === mode));
     document.querySelectorAll('.lg-fallback-note').forEach(el => el.remove());
     const wrap = document.querySelector('#mapWrap');
     [amapLayer, esriStreetLayer, satLayer].forEach(l => { if (map.hasLayer(l)) map.removeLayer(l); });
+    [provLayer, graticuleLayer, provLabelLayer].forEach(l => { if (l && map.hasLayer(l)) map.removeLayer(l); });
     if (mode === 'amap') {
       wrap.classList.remove('vector-base');
-      hideMl();
       amapLayer.addTo(map);
       amapLayerTileHooks();
       watchAmapFallback();
     } else if (mode === 'sat') {
       wrap.classList.remove('vector-base');
-      hideMl();
       satLayer.addTo(map);
-    } else {
+    } else { // vdark 暗夜矢量
       wrap.classList.add('vector-base');
-      showMl(DARK_VECTOR_STYLE);
+      ensureVectorLayers();
+      provLayer.addTo(map);
+      graticuleLayer.addTo(map);
+      provLabelLayer.addTo(map);
     }
   }
 
@@ -287,6 +253,12 @@
       const best = maxP(res, lands);
       const lit = best && best.p >= S.thr;
       const col = lit ? M.probColor(best.p) : '#b9c0c7';
+      // 命中标记的光晕（借鉴参考示例）
+      if (lit) {
+        L.circleMarker([loc.lat, loc.lon], {
+          radius: 17, fillColor: col, fillOpacity: 0.14, stroke: false, interactive: false,
+        }).addTo(layerLocs);
+      }
       const m = L.circleMarker([loc.lat, loc.lon], {
         radius: loc.kind === 'poi' ? (lit ? 9 : 6) : (lit ? 7 : 5),
         fillColor: lit ? col : '#dde2e7', fillOpacity: 0.95,
