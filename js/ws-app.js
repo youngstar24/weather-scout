@@ -87,10 +87,42 @@
 
   /* ================= 地图 ================= */
   let map, layerGrid, layerLocs, layerRings, markersById = {};
-  let baseMode = 'amap', mlmap = null, amapLayer, esriStreetLayer, satLayer;
+  let baseMode = 'vdark', mlmap = null, amapLayer, esriStreetLayer, satLayer;
   let amapLoaded = 0, amapErrored = 0, amapWatchTimer = null;
-  const OFM_LIBERTY = 'https://tiles.openfreemap.org/styles/liberty';
-  const OFM_POSITRON = 'https://tiles.openfreemap.org/styles/positron';
+
+  /** 暗夜矢量样式：深蓝底 + 省界/国界 + 省级中文标注（矢量瓦片来自 OpenFreeMap/OpenMapTiles，OSM 数据） */
+  const DARK_VECTOR_STYLE = {
+    version: 8,
+    glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+    sources: { openmaptiles: { type: 'vector', url: 'https://tiles.openfreemap.org/planet' } },
+    layers: [
+      { id: 'ws-bg', type: 'background', paint: { 'background-color': '#0c1b2e' } },
+      { id: 'ws-water', type: 'fill', source: 'openmaptiles', 'source-layer': 'water',
+        filter: ['!=', ['get', 'brunnel'], 'tunnel'],
+        paint: { 'fill-color': '#081527', 'fill-opacity': 0.9 } },
+      { id: 'ws-adm1', type: 'line', source: 'openmaptiles', 'source-layer': 'boundary',
+        filter: ['all', ['>=', ['get', 'admin_level'], 3], ['<=', ['get', 'admin_level'], 6], ['!=', ['get', 'maritime'], 1]],
+        paint: { 'line-color': '#31517c', 'line-width': 0.8, 'line-opacity': 0.9 } },
+      { id: 'ws-adm0', type: 'line', source: 'openmaptiles', 'source-layer': 'boundary',
+        filter: ['all', ['==', ['get', 'admin_level'], 2], ['!=', ['get', 'maritime'], 1], ['!=', ['get', 'disputed'], 1]],
+        paint: { 'line-color': '#3f6699', 'line-width': 1.2, 'line-opacity': 0.95 } },
+      { id: 'ws-adm0-disputed', type: 'line', source: 'openmaptiles', 'source-layer': 'boundary',
+        filter: ['all', ['==', ['get', 'admin_level'], 2], ['!=', ['get', 'maritime'], 1], ['==', ['get', 'disputed'], 1]],
+        paint: { 'line-color': '#3f6699', 'line-dasharray': [1, 2], 'line-width': 1 } },
+      { id: 'ws-prov-label', type: 'symbol', source: 'openmaptiles', 'source-layer': 'place',
+        filter: ['==', ['get', 'class'], 'state'],
+        minzoom: 3,
+        layout: {
+          'text-field': ['coalesce', ['get', 'name:short'], ['get', 'name:nonlatin'], ['get', 'name']],
+          'text-font': ['Noto Sans Regular'],
+          'text-size': 13,
+          'text-letter-spacing': 0.15,
+          'text-max-width': 6,
+        },
+        paint: { 'text-color': '#8fa8c7', 'text-halo-color': 'rgba(8, 21, 39, 0.85)', 'text-halo-width': 1.2 },
+      },
+    ],
+  };
 
   function initMap() {
     map = L.map('map', {
@@ -103,19 +135,19 @@
       .addTo(map);
     amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
       subdomains: '1234', maxZoom: 11,
-    }).addTo(map);
+    });
     amapLayerTileHooks();
     esriStreetLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 11 });
     satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 11 });
-    watchAmapFallback();
     L.control.scale({ imperial: false }).addTo(map);
     layerRings = L.layerGroup().addTo(map);
     layerGrid = L.layerGroup().addTo(map);
     layerLocs = L.layerGroup().addTo(map);
-    // 底图切换按钮
+    // 底图切换按钮（默认矢量·暗夜）
     document.querySelectorAll('#baseSwitch button').forEach(b => {
       b.addEventListener('click', () => setBase(b.dataset.base));
     });
+    setBase('vdark');
   }
 
   /* ---- 高德备用监测：4 秒内无成功瓦片且出现错误 → 切 ArcGIS 街道图 ---- */
@@ -162,6 +194,12 @@
           center: [map.getCenter().lng, map.getCenter().lat], zoom: map.getZoom() + 1,
         });
         mlmap._wsStyle = styleUrl;
+        // 样式/瓦片错误转发（便于诊断；正常用户不会看到）
+        mlmap.on('error', (e) => {
+          const msg = (e && e.error && (e.error.message || String(e.error))) || String(e);
+          if (window.__errs) window.__errs.push('mlmap: ' + String(msg).slice(0, 150));
+        });
+        window._mlmap = mlmap;
         map.on('move', syncMl);
         map.on('zoom', syncMl);
         window.addEventListener('resize', () => { if (mlmap) mlmap.resize(); });
@@ -198,7 +236,7 @@
       satLayer.addTo(map);
     } else {
       wrap.classList.add('vector-base');
-      showMl(mode === 'vlib' ? OFM_LIBERTY : OFM_POSITRON);
+      showMl(DARK_VECTOR_STYLE);
     }
   }
 
