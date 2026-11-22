@@ -89,8 +89,8 @@ button { font-family: inherit; cursor: pointer; }
 .lit-label::before { display: none; }
 
 /* ---------- 触屏/移动端专属：日期胶囊 + 底部弹层 ---------- */
-.m-only { display: none !important; }
-body.touch .m-only { display: flex; }
+.m-only { display: none; }
+body.touch .m-only { display: flex !important; }
 body.touch #dateAxis { display: none; }
 body.touch #filterBar { display: none; }
 #dateCapRow { padding: 8px 12px; background: #fff; border-bottom: 1px solid #e3e8ee; }
