@@ -307,6 +307,19 @@
         update();
       });
     });
+    // 移动端快捷景观行（触屏端顶替 filterBar）
+    const qc = $('#quickChips');
+    if (qc) {
+      qc.innerHTML = Object.values(M.LANDSCAPES).map(l => `
+        <button class="chip ${S.lands.has(l.key) ? 'on' : ''}" data-key="${l.key}"><span>${l.icon}</span>${l.name}</button>`).join('');
+      qc.querySelectorAll('.chip').forEach(b => {
+        b.addEventListener('click', () => {
+          const k = b.dataset.key;
+          if (S.lands.has(k)) S.lands.delete(k); else S.lands.add(k);
+          update();
+        });
+      });
+    }
   }
 
   function renderDateAxis() {
@@ -338,11 +351,20 @@
         update();
       });
     });
+    // 弹层内等时圈开关（与桌面 ringChecks 状态同步）
+    const fr = $('#fRings');
+    if (fr) {
+      fr.innerHTML = M.RINGS.map(r => `
+        <label class="lchip ${S.rings.has(r.id) ? 'on' : ''}" data-ring="${r.id}">
+          <input type="checkbox" value="${r.id}" ${S.rings.has(r.id) ? 'checked' : ''} style="display:none"/> ${r.mode}${r.hours}h <span class="muted">≈${r.km}km</span>
+        </label>`).join('');
+    }
   }
 
   /* ================= 候选列表 ================= */
   function renderCandidates() {
     const hits = candidates();
+    S._lastHits = hits.length;
     $('#candCount').textContent = `${hits.length} / ${locList().length}`;
     const landsTxt = [...S.lands].map(k => M.LANDSCAPES[k].icon).join('') || '—';
     $('#candHint').textContent = `${landsTxt} ≥${S.thr}%`;
@@ -394,6 +416,111 @@
         update();
       }));
     }
+  }
+
+  /* ================= 触屏端：日期胶囊 + 底部弹层（方案 1 / 已批准） ================= */
+  const isTouch = () => window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 960;
+
+  function buildDateSheet() {
+    // 快捷项：今天 / 明天 / 本周六（下一个周六）
+    const nextSat = (() => { for (let d = 1; d < 16; d++) if (new Date(dailyTime[d] + 'T12:00:00Z').getUTCDay() === 6) return d; return Math.min(7, 15); })();
+    $('#dateQuick').innerHTML = `
+      <button class="lchip" data-d="0">今天 ${dayLabel(0).date}</button>
+      <button class="lchip" data-d="1">明天 ${dayLabel(1).date}</button>
+      <button class="lchip" data-d="${nextSat}">本周六 ${dayLabel(nextSat).date}</button>`;
+    // 16 天格子（日期/星期/D数/可信度色点）
+    $('#dateGrid').innerHTML = dailyTime.map((t, i) => {
+      const lb = dayLabel(i);
+      return `<div class="dcell" data-d="${i}">
+        <div class="d1">${lb.date}</div><div class="d2">${lb.week}</div><div class="d3">D${i}</div>
+        <div class="dot" style="background:${M.credibility(i).color}"></div></div>`;
+    }).join('');
+  }
+
+  function renderDateCap() {
+    const cap = $('#dateCapText');
+    if (cap) { const lb = dayLabel(S.d); cap.textContent = `${lb.date} ${lb.week} · 第 ${S.d + 1} 天`; }
+    document.querySelectorAll('#dateGrid .dcell').forEach(el => el.classList.toggle('sel', +el.dataset.d === S.d));
+  }
+
+  function buildFilterSheet() {
+    $('#fLands').innerHTML = Object.values(M.LANDSCAPES).map(l =>
+      `<button class="lchip ${S.lands.has(l.key) ? 'on' : ''}" data-key="${l.key}">${l.icon} ${l.name}</button>`).join('');
+    $('#fQuals').innerHTML = M.QUALITY_ORDER.map(q =>
+      `<button class="lchip ${S.quals.has(q) ? 'on' : ''}" data-q="${q}">${q}</button>`).join('');
+    $('#fThr').value = S.thr;
+    $('#fThrVal').textContent = S.thr + '%';
+    $('#fSort').value = S.sort;
+  }
+  /** 弹层内按钮高亮与桌面控件状态保持一致 */
+  function syncSheetFilter() {
+    document.querySelectorAll('#fLands .lchip').forEach(b => b.classList.toggle('on', S.lands.has(b.dataset.key)));
+    document.querySelectorAll('#fQuals .lchip').forEach(b => b.classList.toggle('on', S.quals.has(b.dataset.q)));
+    document.querySelectorAll('#quickChips .chip').forEach(b => b.classList.toggle('on', S.lands.has(b.dataset.key)));
+    document.querySelectorAll('#landChips .chip').forEach(b => b.classList.toggle('on', S.lands.has(b.dataset.key)));
+    $('#fThr').value = S.thr; $('#fThrVal').textContent = S.thr + '%';
+    $('#fSort').value = S.sort;
+    document.querySelectorAll('#fRings .lchip').forEach(b => {
+      b.classList.toggle('on', S.rings.has(b.dataset.ring));
+      const cb = b.querySelector('input'); if (cb) cb.checked = S.rings.has(b.dataset.ring);
+    });
+  }
+  function updateFilterHit() {
+    $('#fDone').textContent = `完成 · 共 ${S._lastHits || 0} 个目的地命中`;
+  }
+  function openSheet(id) {
+    if (id === 'sheetFilter') { syncSheetFilter(); updateFilterHit(); }
+    if (id === 'sheetDate') renderDateCap();
+    $('#' + id).classList.add('open');
+    $('#scrim').classList.add('open');
+  }
+  function closeSheets() {
+    document.querySelectorAll('.bsheet.open').forEach(s => s.classList.remove('open'));
+    $('#scrim').classList.remove('open');
+  }
+  function initSheets() {
+    $('#dateCap').addEventListener('click', () => openSheet('sheetDate'));
+    $('#btnFilter').addEventListener('click', () => openSheet('sheetFilter'));
+    $('#scrim').addEventListener('click', closeSheets);
+    document.querySelectorAll('.bsheet .bx').forEach(b => b.addEventListener('click', closeSheets));
+    $('#dateQuick').addEventListener('click', e => {
+      const b = e.target.closest('[data-d]'); if (!b) return;
+      S.d = +b.dataset.d; closeSheets(); update();
+    });
+    $('#dateGrid').addEventListener('click', e => {
+      const c = e.target.closest('.dcell'); if (!c) return;
+      S.d = +c.dataset.d; closeSheets(); update();
+    });
+    $('#fLands').addEventListener('click', e => {
+      const b = e.target.closest('[data-key]'); if (!b) return;
+      const k = b.dataset.key;
+      if (S.lands.has(k)) S.lands.delete(k); else S.lands.add(k);
+      syncSheetFilter(); update();
+    });
+    $('#fThr').addEventListener('input', e => {
+      S.thr = +e.target.value;
+      $('#fThrVal').textContent = S.thr + '%';
+      $('#threshold').value = S.thr; $('#thresholdVal').textContent = S.thr + '%';
+      renderCandidates(); renderEmpty(); drawMap(); renderLegend();
+      updateFilterHit();
+    });
+    $('#fQuals').addEventListener('click', e => {
+      const b = e.target.closest('[data-q]'); if (!b) return;
+      const q = b.dataset.q;
+      if (S.quals.has(q)) S.quals.delete(q); else S.quals.add(q);
+      syncSheetFilter(); update();
+    });
+    $('#fSort').addEventListener('change', e => {
+      S.sort = e.target.value; $('#sortBy').value = S.sort; renderCandidates();
+    });
+    $('#fRings').addEventListener('click', e => {
+      const lb = e.target.closest('label[data-ring]'); if (!lb) return;
+      const cb = lb.querySelector('input');
+      if (cb.checked) S.rings.add(lb.dataset.ring); else S.rings.delete(lb.dataset.ring);
+      lb.classList.toggle('on', cb.checked);
+      update();
+    });
+    $('#fDone').addEventListener('click', closeSheets);
   }
 
   /* ================= 详情抽屉 ================= */
@@ -777,11 +904,13 @@
   function update() {
     renderChips();
     renderDateAxis();
+    renderDateCap();
     renderLegend();
     drawRings();
     drawMap();
     renderCandidates();
     renderEmpty();
+    updateFilterHit();
     $('#dataStamp').textContent = `数据更新：${(C.generatedAt || '').replace('T', ' ').slice(0, 16)} UTC（Open-Meteo 真实抓取）`;
     if (S.drawerLoc && $('#drawer').classList.contains('open')) openDetail(S.drawerLoc);
   }
@@ -805,6 +934,12 @@
     initMap();
     renderChips();
     renderOrigin();
+    // 触屏/移动端：日期胶囊 + 底部弹层；判定含手机横屏（pointer coarse）
+    document.body.classList.toggle('touch', isTouch());
+    window.addEventListener('resize', () => document.body.classList.toggle('touch', isTouch()));
+    buildDateSheet();
+    buildFilterSheet();
+    initSheets();
     initSubModal();
     initAbout();
     initTabs();

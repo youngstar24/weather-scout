@@ -87,6 +87,53 @@ button { font-family: inherit; cursor: pointer; }
   text-shadow: 0 0 3px rgba(4, 12, 24, 0.95);
 }
 .lit-label::before { display: none; }
+
+/* ---------- 触屏/移动端专属：日期胶囊 + 底部弹层 ---------- */
+.m-only { display: none !important; }
+body.touch .m-only { display: flex; }
+body.touch #dateAxis { display: none; }
+body.touch #filterBar { display: none; }
+#dateCapRow { padding: 8px 12px; background: #fff; border-bottom: 1px solid #e3e8ee; }
+#dateCap { width: 100%; border: 1px solid #d7dee6; background: #fff; border-radius: 12px;
+           padding: 12px 14px; font-size: 15px; font-weight: 700; color: #2c3a47;
+           display: flex; justify-content: space-between; align-items: center; }
+#dateCap .cap-caret { color: #8a929b; font-size: 12px; font-weight: 400; }
+#quickChipsRow { padding: 8px 12px; background: #fff; border-bottom: 1px solid #e3e8ee;
+                 gap: 8px; overflow-x: auto; align-items: center; }
+#quickChips { flex-wrap: nowrap; }
+#quickChips .chip { white-space: nowrap; flex-shrink: 0; }
+.gearbtn { border-radius: 18px; padding: 8px 13px; font-size: 13px; border: 1px solid #2b6cb0;
+           background: #eaf2fb; color: #2b6cb0; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+.bscrim { position: fixed; inset: 0; background: rgba(15, 24, 38, 0.45); z-index: 1400;
+          opacity: 0; pointer-events: none; transition: opacity .25s; }
+.bscrim.open { opacity: 1; pointer-events: auto; }
+.bsheet { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; z-index: 1450;
+          border-radius: 18px 18px 0 0; padding: 16px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+          transform: translateY(105%); transition: transform .28s; max-height: 78vh; overflow-y: auto;
+          box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25); }
+.bsheet.open { transform: translateY(0); }
+.bsh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.bsh b { font-size: 16px; }
+.sec { font-size: 11px; color: #8a929b; margin: 14px 0 8px; letter-spacing: 0.04em; }
+.dgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.dcell { border: 1px solid #e3e8ee; border-radius: 12px; padding: 7px 0 6px; text-align: center;
+         background: #fff; cursor: pointer; }
+.dcell .d1 { font-size: 13px; font-weight: 700; }
+.dcell .d2 { font-size: 10px; color: #8a929b; }
+.dcell .d3 { font-size: 9px; color: #b3bac2; }
+.dcell .dot { width: 6px; height: 6px; border-radius: 50%; margin: 3px auto 0; }
+.dcell.sel { border: 2px solid #2b6cb0; background: #eaf2fb; }
+.dcell.sel .d1 { color: #2b6cb0; }
+.quick { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.quick .lchip { border-radius: 18px; padding: 8px 13px; font-size: 13px; border: 1px solid #d7dee6;
+                background: #fff; white-space: nowrap; }
+.lchip.on { background: #2b6cb0; border-color: #2b6cb0; color: #fff; font-weight: 600; }
+.frow { display: flex; align-items: center; gap: 10px; }
+.frow input[type=range] { flex: 1; accent-color: #2b6cb0; }
+.frow .accent { color: #2b6cb0; }
+.fsel { flex: 1; padding: 8px 10px; border: 1px solid #d7dee6; border-radius: 8px; font-size: 13px; background: #fff; }
+.fdone { width: 100%; margin-top: 14px; padding: 12px 0; border-radius: 12px; border: none;
+         background: #2b6cb0; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; }
 #baseSwitch {
   position: absolute; top: 10px; right: 10px; z-index: 600;
   background: rgba(255,255,255,.95); border: 1px solid #e3e8ee; border-radius: 10px;

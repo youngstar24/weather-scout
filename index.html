@@ -38,6 +38,14 @@
   </div>
 </div>
 
+<div id="dateCapRow" class="m-only">
+  <button id="dateCap" type="button">📅 <b id="dateCapText"></b><span class="cap-caret">点击选择 ▾</span></button>
+</div>
+<div id="quickChipsRow" class="m-only">
+  <div id="quickChips" class="chips"></div>
+  <button id="btnFilter" class="gearbtn" type="button">⚙ 筛选</button>
+</div>
+
 <div id="mobileTabs">
   <button class="on" data-view="map">🗺 地图</button>
   <button data-view="list">📋 候选</button>
@@ -82,6 +90,36 @@
     <div class="modal-head"><b>关于 / 数据说明</b><button class="icon-btn close">✕</button></div>
     <div id="aboutBody"></div>
   </div>
+</div>
+
+<div id="scrim" class="bscrim"></div>
+
+<div id="sheetDate" class="bsheet">
+  <div class="bsh"><b>选择日期</b><button class="icon-btn bx" data-close="1">✕</button></div>
+  <div class="quick" id="dateQuick"></div>
+  <div class="dgrid" id="dateGrid"></div>
+  <p class="muted" style="margin: 10px 0 0; font-size: 11px;">色点为预报可信度：绿 高 / 黄 中 / 红 低（D0–2 高 → D7–15 低）</p>
+</div>
+
+<div id="sheetFilter" class="bsheet">
+  <div class="bsh"><b>筛选</b><button class="icon-btn bx" data-close="1">✕</button></div>
+  <div class="sec">── 景观（多选）──</div>
+  <div class="quick" id="fLands"></div>
+  <div class="sec">── 发生概率阈值 ──</div>
+  <div class="frow"><input type="range" id="fThr" min="10" max="95" value="50"><b id="fThrVal" class="accent">50%</b></div>
+  <div class="sec">── 观赏质量 ──</div>
+  <div class="quick" id="fQuals"></div>
+  <div class="sec">── 排序 ──</div>
+  <div class="frow">
+    <select id="fSort" class="fsel">
+      <option value="prob">按概率（高→低）</option>
+      <option value="dist">按距离（近→远）</option>
+      <option value="quality">按观赏质量</option>
+    </select>
+  </div>
+  <div class="sec">── 出发地等时圈（直线近似） ──</div>
+  <div class="quick" id="fRings"></div>
+  <button id="fDone" class="fdone" type="button">完成 · 共 0 个目的地命中</button>
 </div>
 
 <div id="toast"></div>
