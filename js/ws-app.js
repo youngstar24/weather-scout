@@ -94,11 +94,26 @@
       attributionControl: false, zoomControl: true,
     });
     L.control.attribution({ prefix: false })
-      .addAttribution('底图 © 高德地图（演示，GCJ-02）· 数据 © <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>')
+      .addAttribution('底图 © 高德地图（演示，GCJ-02）· 备用 © Esri · 数据 © <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>')
       .addTo(map);
-    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    // 主底图：高德（中文标注）；4 秒内无成功瓦片则自动切备用（ArcGIS，全球可达）
+    const amapLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
       subdomains: '1234', maxZoom: 11,
     }).addTo(map);
+    const esriLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 11,
+    });
+    let amapLoaded = 0, amapErrored = 0;
+    amapLayer.on('tileload', () => { amapLoaded++; });
+    amapLayer.on('tileerror', () => { amapErrored++; });
+    setTimeout(() => {
+      if (amapLoaded === 0 && amapErrored > 0) {
+        map.removeLayer(amapLayer);
+        esriLayer.addTo(map);
+        const lg = $('#legend');
+        if (lg) lg.insertAdjacentHTML('beforeend', '<div class="lg-row small">⚠ 当前使用备用底图（Esri，英文标注）——你的网络暂无法连接高德瓦片。</div>');
+      }
+    }, 4000);
     L.control.scale({ imperial: false }).addTo(map);
     layerRings = L.layerGroup().addTo(map);
     layerGrid = L.layerGroup().addTo(map);
