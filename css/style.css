@@ -201,6 +201,13 @@ body.touch #filterBar { display: none; }
 .pbar { height: 8px; background: #eef1f5; border-radius: 4px; overflow: hidden; }
 .pbar i { display: block; height: 100%; border-radius: 4px; }
 .dr-note { font-size: 11px; color: #a5adb5; margin: 0 18px; }
+.dr-datecap { padding: 0 18px; margin-top: 4px; }
+.datecap-btn { width: 100%; border: 1.5px solid #2b6cb0; background: #eaf2fb; color: #2b6cb0;
+               font-weight: 700; font-size: 14px; border-radius: 12px; padding: 10px 13px;
+               display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.datecap-btn .caret { font-size: 11px; font-weight: 400; }
+.datecap-btn b { font-weight: 700; }
+.ws-dot { cursor: pointer; }
 .dr-sec { padding: 6px 18px; }
 .dr-sec h4 { margin: 10px 0 6px; font-size: 13px; color: #4a5568; }
 .dr-actions { padding: 10px 18px 24px; display: flex; flex-wrap: wrap; gap: 8px; }

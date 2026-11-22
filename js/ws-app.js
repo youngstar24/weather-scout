@@ -563,7 +563,8 @@
       </div>
       <table class="dr-table"><thead><tr><th>景观</th><th style="width:34%">发生概率</th><th>%</th><th title="观赏质量=若该景观发生时的观感分级（如降雪量、色彩潜力），≠发生概率；概率<25% 时显示 —；避暑仅 5–9 月、避寒仅 11–3 月有意义">观赏质量 ⓘ</th><th>最佳时段</th></tr></thead><tbody>${rows}</tbody></table>
       <div class="dr-note">* 网格近似值（无逐小时数据的格点）。点击行可切换筛选景观。观赏质量是"发生了好不好看"，与"发生概率"相互独立。</div>
-      <div class="dr-sec"><h4>16 天概率曲线（选中景观）</h4><div id="drCurves"></div></div>
+      <div class="dr-datecap"><button class="datecap-btn" id="drDateCap" type="button">📅 <b>${dayLabel(d).date} ${dayLabel(d).week} · 第 ${d + 1} 天</b><span class="caret">点击切换日期 ▾</span></button></div>
+      <div class="dr-sec"><h4>16 天概率曲线（选中景观 · 点击圆点切换日期）</h4><div id="drCurves"></div></div>
       <div class="dr-sec"><h4>${dayLabel(d).date} 逐小时预报（气温 / 降水概率 / 云量）</h4><div id="drHourly"></div></div>
       <div class="dr-actions">
         <button class="chip" id="drSub">🔔 用当前条件订阅此地</button>
@@ -574,6 +575,8 @@
       </div>`;
     $('#drawer').classList.add('open');
     $('#drClose').addEventListener('click', closeDetail);
+    // 抽屉内日期胶囊：打开与主界面共用的日期弹层
+    $('#drDateCap').addEventListener('click', () => openSheet('sheetDate'));
     $('#drSub').addEventListener('click', () => {
       addSub({ lands: [...S.lands], origin: S.origin, rings: [...S.rings], from: S.d, to: S.d, thr: S.thr, note: loc.name });
       toast('已保存订阅（本地演示）');
@@ -588,6 +591,10 @@
     });
     renderCurves(loc, ls);
     renderHourly(loc, d, res);
+    // 曲线圆点点击 → 切换日期（update 会刷新整个抽屉）
+    $('#drCurves').querySelectorAll('.ws-dot').forEach(c => {
+      c.addEventListener('click', () => { S.d = +c.dataset.d; update(); });
+    });
   }
 
   function closeDetail() { $('#drawer').classList.remove('open'); S.drawerLoc = null; }
@@ -616,7 +623,8 @@
     if (cur.length) segs.push(cur);
     const polys = segs.map(seg => `<polyline points="${seg.map(([i, v]) => `${x(i)},${y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="${l.color}" stroke-width="2"/>`).join('');
     const dots = vals.map((r, i) => (r && r.p != null)
-      ? `<circle cx="${x(i)}" cy="${y(r.p).toFixed(1)}" r="2.8" fill="${M.probColor(r.p)}"><title>D${i} ${dayLabel(i).date}（${dayLabel(i).week}）：发生概率 ${Math.round(r.p)}% · 观赏质量${r.quality} · 可信度${M.credibility(i).level}</title></circle>`
+      ? `<circle class="ws-dot" data-d="${i}" cx="${x(i)}" cy="${y(r.p).toFixed(1)}" r="2.8" fill="${M.probColor(r.p)}"><title>D${i} ${dayLabel(i).date}（${dayLabel(i).week}）：发生概率 ${Math.round(r.p)}% · 观赏质量${r.quality} · 可信度${M.credibility(i).level} · 点击切换到这一天</title></circle>
+         <circle cx="${x(i)}" cy="${y(r.p).toFixed(1)}" r="10" fill="transparent" class="ws-dot" data-d="${i}" style="cursor:pointer"></circle>`
       : '').join('');
     // 每个点的概率数值
     const vlabels = vals.map((r, i) => (r && r.p != null)
