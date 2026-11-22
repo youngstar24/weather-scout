@@ -6,7 +6,7 @@
 ## 在线访问（Cloudflare Pages）
 
 - **Web 版**：https://weather-scout.pages.dev/
-- **H5 版**：https://weather-scout.pages.dev/?mode=h5 （手机直接访问会自动适配，无需参数）
+- **H5 版**：https://weather-scout.pages.dev/?mode=h5 （手机直接访问会自动适配：地图区加高、标记放大、筛选条单行滚动、双指缩放）
 - **部署管线**：push 到 GitHub `main` 分支 → Cloudflare Pages 自动构建上线（约 1 分钟）
 - **底图策略**：地图右上角可切换四种底图——**高德**（中文标注栅格）、**矢量·清晰 / 矢量·浅灰**（MapLibre GL + OpenFreeMap 真矢量瓦片）、**卫星**（Esri 影像）；高德瓦片加载失败时 4 秒后自动切 Esri 备用。注意：高德底图为 GCJ-02 坐标系（演示用途）；矢量与卫星底图为 WGS84，标记对位更精确。
 
