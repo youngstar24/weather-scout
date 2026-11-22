@@ -1,0 +1,198 @@
+{
+ "d1": {
+  "city-beijing": {
+   "date": "2026-11-27",
+   "sunrise": "07:12",
+   "sunset": "16:51"
+  },
+  "city-sanya": {
+   "date": "2026-11-27",
+   "sunrise": "06:54",
+   "sunset": "18:03"
+  },
+  "yalongwan": {
+   "date": "2026-11-27",
+   "sunrise": "06:54",
+   "sunset": "18:03"
+  },
+  "mohe-beijicun": {
+   "date": "2026-11-27",
+   "sunrise": "07:36",
+   "sunset": "15:39"
+  }
+ },
+ "d2": {
+  "beijing_visibility": {
+   "min": 15,
+   "max": 24,
+   "unit": "km（缓存由 m/1000 取整）",
+   "nulls": 0
+  },
+  "beijing_temp_D7": {
+   "tmax": 10.3,
+   "tmin": 1.5
+  },
+  "changbaishan_snowfall_sum_D7_cm": 11.76,
+  "changbaishan_hourly_snowfall_D7": [
+   0.14,
+   0.14,
+   0.14,
+   0.28,
+   0.28,
+   0.28,
+   0.63,
+   0.63,
+   0.63,
+   0.42
+  ],
+  "cloud_cover": {
+   "min": 0,
+   "max": 100,
+   "sampled": 67200,
+   "outOfRange": 0
+  },
+  "visibilityNullCount_allLocations": 0
+ },
+ "d3": {
+  "gridCount": 273,
+  "landCount": 104,
+  "seaCount": 169,
+  "landSample": [
+   {
+    "id": "g_130_45",
+    "lat": 45,
+    "lon": 130,
+    "hasWx": true,
+    "dailyLen": 16
+   },
+   {
+    "id": "g_121_42",
+    "lat": 42,
+    "lon": 121,
+    "hasWx": true,
+    "dailyLen": 16
+   },
+   {
+    "id": "g_100_30",
+    "lat": 30,
+    "lon": 100,
+    "hasWx": true,
+    "dailyLen": 16
+   }
+  ],
+  "seaSample": [
+   {
+    "id": "g_79_30",
+    "lat": 30,
+    "lon": 79,
+    "hasWx": false
+   },
+   {
+    "id": "g_118_21",
+    "lat": 21,
+    "lon": 118,
+    "hasWx": false
+   },
+   {
+    "id": "g_115_18",
+    "lat": 18,
+    "lon": 115,
+    "hasWx": false
+   }
+  ],
+  "allLandHaveWx": true,
+  "noSeaHasWx": true
+ },
+ "d4": {
+  "candidatesD7snow50": {
+   "count": 17,
+   "list": [
+    {
+     "name": "长白山天池",
+     "p": 78,
+     "quality": "优"
+    },
+    {
+     "name": "禾木村",
+     "p": 69.3,
+     "quality": "佳"
+    },
+    {
+     "name": "喀纳斯湖",
+     "p": 64.6,
+     "quality": "佳"
+    },
+    {
+     "name": "雾凇岛",
+     "p": 55,
+     "quality": "佳"
+    },
+    {
+     "name": "雪乡",
+     "p": 55,
+     "quality": "优"
+    },
+    {
+     "name": "哈尔滨冰雪大世界",
+     "p": 55,
+     "quality": "佳"
+    },
+    {
+     "name": "亚布力滑雪场",
+     "p": 55,
+     "quality": "优"
+    },
+    {
+     "name": "五大连池",
+     "p": 55,
+     "quality": "一般"
+    },
+    {
+     "name": "镜泊湖",
+     "p": 55,
+     "quality": "一般"
+    },
+    {
+     "name": "长春净月潭",
+     "p": 55,
+     "quality": "佳"
+    },
+    {
+     "name": "恒山悬空寺",
+     "p": 55,
+     "quality": "一般"
+    },
+    {
+     "name": "塞罕坝",
+     "p": 55,
+     "quality": "佳"
+    },
+    {
+     "name": "赛里木湖",
+     "p": 55,
+     "quality": "一般"
+    },
+    {
+     "name": "阿尔山",
+     "p": 55,
+     "quality": "佳"
+    },
+    {
+     "name": "长春",
+     "p": 55,
+     "quality": "一般"
+    },
+    {
+     "name": "哈尔滨",
+     "p": 55,
+     "quality": "佳"
+    },
+    {
+     "name": "吉林市",
+     "p": 55,
+     "quality": "佳"
+    }
+   ]
+  }
+ }
+}

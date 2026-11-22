@@ -1,0 +1,410 @@
+{
+ "rows": [
+  {
+   "label": "长白山天池 D7 下雪（第7个预报日/11-27）",
+   "key": "snow",
+   "date": "2026-11-27",
+   "mine": 78,
+   "model": 78,
+   "modelRounded": 78,
+   "diff": 0,
+   "pass": true,
+   "parts": {
+    "pprob": 78,
+    "phase": 1,
+    "phaseSrc": "逐小时降水时<1℃占比 22/22",
+    "snowSum": 11.76,
+    "code": 85,
+    "tmean": -8.2
+   },
+   "modelParts": {
+    "snowSum": 11.76,
+    "tmean": -8,
+    "phase": 1,
+    "code": 85
+   },
+   "window": "00–24 时",
+   "qualityModel": "优"
+  },
+  {
+   "label": "长白山天池 D7 下雪（页面D7按钮/11-28）",
+   "key": "snow",
+   "date": "2026-11-28",
+   "mine": 63,
+   "model": 63,
+   "modelRounded": 63,
+   "diff": 0,
+   "pass": true,
+   "parts": {
+    "pprob": 63,
+    "phase": 1,
+    "phaseSrc": "逐小时降水时<1℃占比 19/19",
+    "snowSum": 6.51,
+    "code": 85,
+    "tmean": -14.4
+   },
+   "modelParts": {
+    "snowSum": 6.51,
+    "tmean": -14,
+    "phase": 1,
+    "code": 85
+   },
+   "window": "00–21 时",
+   "qualityModel": "优"
+  },
+  {
+   "label": "三亚亚龙湾 D7 避寒（第7个预报日/11-27）",
+   "key": "warm",
+   "date": "2026-11-27",
+   "mine": 98,
+   "model": 98,
+   "modelRounded": 98,
+   "diff": 0,
+   "pass": true,
+   "parts": {
+    "atMin": 24.5,
+    "comfort": 1
+   },
+   "modelParts": {
+    "atMin": 25
+   },
+   "window": "全天",
+   "qualityModel": "优"
+  },
+  {
+   "label": "三亚亚龙湾 D7 避寒（页面D7按钮/11-28）",
+   "key": "warm",
+   "date": "2026-11-28",
+   "mine": 98,
+   "model": 98,
+   "modelRounded": 98,
+   "diff": 0,
+   "pass": true,
+   "parts": {
+    "atMin": 22.9,
+    "comfort": 1
+   },
+   "modelParts": {
+    "atMin": 23
+   },
+   "window": "全天",
+   "qualityModel": "优"
+  },
+  {
+   "label": "长白山天池 D7 观星（第7个预报日/11-27）",
+   "key": "stars",
+   "date": "2026-11-27",
+   "mine": 22.2,
+   "model": 23.8,
+   "modelRounded": 24,
+   "diff": -1.6,
+   "pass": true,
+   "parts": {
+    "nightCloud": 100,
+    "age": 17.58,
+    "illum": 0.913,
+    "dark": 0.087,
+    "lp": 1,
+    "lpF": 1
+   },
+   "modelParts": {
+    "nightCloud": 100,
+    "moon": 0.91,
+    "lp": 1
+   },
+   "window": "21:00–次日 04:00",
+   "qualityModel": "差"
+  },
+  {
+   "label": "长白山天池 D7 观星（页面D7按钮/11-28）",
+   "key": "stars",
+   "date": "2026-11-28",
+   "mine": 62.2,
+   "model": 62,
+   "modelRounded": 62,
+   "diff": 0.2,
+   "pass": true,
+   "parts": {
+    "nightCloud": 30.4,
+    "age": 18.58,
+    "illum": 0.844,
+    "dark": 0.156,
+    "lp": 1,
+    "lpF": 1
+   },
+   "modelParts": {
+    "nightCloud": 30,
+    "moon": 0.84,
+    "lp": 1
+   },
+   "window": "21:00–次日 04:00",
+   "qualityModel": "一般"
+  },
+  {
+   "label": "黄山 D7 朝霞晚霞（第7个预报日/11-27）",
+   "key": "glow",
+   "date": "2026-11-27",
+   "mine": 40,
+   "model": 43,
+   "modelRounded": 43,
+   "diff": -3,
+   "pass": true,
+   "parts": {
+    "morning": 0.4,
+    "evening": 0.4,
+    "pickEvening": true,
+    "scatter": 0,
+    "vis": 32,
+    "dry": 1,
+    "hours": [
+     16,
+     17
+    ]
+   },
+   "modelParts": {
+    "scatter": 0,
+    "vis": 32
+   },
+   "window": "晚霞 16:22–17:52",
+   "qualityModel": "一般"
+  },
+  {
+   "label": "黄山 D7 朝霞晚霞（页面D7按钮/11-28）",
+   "key": "glow",
+   "date": "2026-11-28",
+   "mine": 41.5,
+   "model": 42.5,
+   "modelRounded": 43,
+   "diff": -1,
+   "pass": true,
+   "parts": {
+    "morning": 0.415,
+    "evening": 0.395,
+    "pickEvening": false,
+    "scatter": 1.7,
+    "vis": 25.3,
+    "dry": 0.98,
+    "hours": [
+     5,
+     6,
+     7
+    ]
+   },
+   "modelParts": {
+    "scatter": 0,
+    "vis": 31
+   },
+   "window": "晚霞 16:22–17:52",
+   "qualityModel": "一般"
+  },
+  {
+   "label": "长白山天池 D7 朝霞晚霞（第7个预报日/11-27）",
+   "key": "glow",
+   "date": "2026-11-27",
+   "mine": 6.2,
+   "model": 9.3,
+   "modelRounded": 9,
+   "diff": -3,
+   "pass": true,
+   "parts": {
+    "morning": 0.0625,
+    "evening": 0.0625,
+    "pickEvening": true,
+    "scatter": 100,
+    "vis": 1,
+    "dry": 0.22,
+    "hours": [
+     15,
+     16
+    ]
+   },
+   "modelParts": {
+    "scatter": 100,
+    "vis": 1
+   },
+   "window": "晚霞 15:13–16:43",
+   "qualityModel": "差"
+  },
+  {
+   "label": "长白山天池 D7 朝霞晚霞（页面D7按钮/11-28）",
+   "key": "glow",
+   "date": "2026-11-28",
+   "mine": 10.6,
+   "model": 13,
+   "modelRounded": 13,
+   "diff": -2.4,
+   "pass": true,
+   "parts": {
+    "morning": 0.1,
+    "evening": 0.106,
+    "pickEvening": true,
+    "scatter": 99.5,
+    "vis": 0,
+    "dry": 0.37,
+    "hours": [
+     15,
+     16
+    ]
+   },
+   "modelParts": {
+    "scatter": 99,
+    "vis": 0
+   },
+   "window": "晚霞 15:13–16:43",
+   "qualityModel": "差"
+  }
+ ],
+ "subHitCount": 22,
+ "subHits": [
+  {
+   "id": "changbaishan",
+   "name": "长白山天池",
+   "p": 78,
+   "d": 6
+  },
+  {
+   "id": "hemu",
+   "name": "禾木村",
+   "p": 69.3,
+   "d": 6
+  },
+  {
+   "id": "kanasi",
+   "name": "喀纳斯湖",
+   "p": 64.6,
+   "d": 6
+  },
+  {
+   "id": "wusongdao",
+   "name": "雾凇岛",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "mohe-beijicun",
+   "name": "漠河北极村",
+   "p": 55,
+   "d": 7
+  },
+  {
+   "id": "xuexiang",
+   "name": "雪乡",
+   "p": 55,
+   "d": 5
+  },
+  {
+   "id": "bingxue-dashijie",
+   "name": "哈尔滨冰雪大世界",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "yabuli",
+   "name": "亚布力滑雪场",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "wudalianchi",
+   "name": "五大连池",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "jingpohu",
+   "name": "镜泊湖",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "jingyuetan",
+   "name": "长春净月潭",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "hengshan-beiyue",
+   "name": "恒山悬空寺",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "saihanba",
+   "name": "塞罕坝",
+   "p": 55,
+   "d": 5
+  },
+  {
+   "id": "sayramhu",
+   "name": "赛里木湖",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "hulunbeier-morigele",
+   "name": "呼伦贝尔莫日格勒河",
+   "p": 55,
+   "d": 5
+  },
+  {
+   "id": "aershan",
+   "name": "阿尔山",
+   "p": 55,
+   "d": 5
+  },
+  {
+   "id": "huanglong",
+   "name": "黄龙",
+   "p": 55,
+   "d": 5
+  },
+  {
+   "id": "dagu-bingchuan",
+   "name": "达古冰川",
+   "p": 55,
+   "d": 5
+  },
+  {
+   "id": "meili-feilaishi",
+   "name": "梅里雪山飞来寺",
+   "p": 55,
+   "d": 5
+  },
+  {
+   "id": "city-changchun",
+   "name": "长春",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "city-harbin",
+   "name": "哈尔滨",
+   "p": 55,
+   "d": 6
+  },
+  {
+   "id": "city-jilin",
+   "name": "吉林市",
+   "p": 55,
+   "d": 6
+  }
+ ],
+ "dailyTime": [
+  "2026-11-21",
+  "2026-11-22",
+  "2026-11-23",
+  "2026-11-24",
+  "2026-11-25",
+  "2026-11-26",
+  "2026-11-27",
+  "2026-11-28",
+  "2026-11-29",
+  "2026-11-30",
+  "2026-12-01",
+  "2026-12-02",
+  "2026-12-03",
+  "2026-12-04",
+  "2026-12-05",
+  "2026-12-06"
+ ]
+}

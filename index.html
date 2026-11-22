@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>追景地图 WeatherScout · 全国天气预测地图 Demo</title>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand">🏔️ 追景地图 <span class="sub">WeatherScout · 网页 Demo</span></div>
+  <div id="dateAxis" class="date-axis" title="D0–D15 日期时间轴，色点为预报可信度"></div>
+  <div class="actions">
+    <label class="origin-label">出发地 <select id="originSel"></select></label>
+    <button id="btnSubs" class="btn">🔔 订阅<span id="subCount" class="badge"></span></button>
+    <button id="btnAbout" class="btn">📖 数据说明</button>
+    <button id="btnRefresh" class="btn" title="实时重新抓取 Open-Meteo 数据">↻ 刷新</button>
+  </div>
+</header>
+
+<div id="filterBar">
+  <div class="chips" id="landChips"></div>
+  <div class="filter-more">
+    <label class="thr-label">概率阈值 <input type="range" id="threshold" min="10" max="95" value="50"> <b id="thresholdVal">50%</b></label>
+    <div class="chips sm" id="qualChips"></div>
+    <details id="ringBox">
+      <summary>等时圈（近似）</summary>
+      <div id="ringChecks"></div>
+    </details>
+    <select id="sortBy">
+      <option value="prob">排序：概率</option>
+      <option value="dist">排序：距离</option>
+      <option value="quality">排序：质量</option>
+    </select>
+  </div>
+</div>
+
+<div id="mobileTabs">
+  <button class="on" data-view="map">🗺 地图</button>
+  <button data-view="list">📋 候选</button>
+</div>
+
+<main id="main">
+  <div id="mapWrap">
+    <div id="map"></div>
+    <div id="legend"></div>
+  </div>
+  <aside id="candPanel">
+    <div class="cand-head"><b>候选目的地</b><span id="candCount" class="muted"></span><span id="candHint" class="muted"></span></div>
+    <div id="candList"></div>
+    <div id="emptyState" class="empty" hidden></div>
+  </aside>
+</main>
+
+<footer id="foot">
+  <span id="dataStamp"></span>
+  <span>本页为出行参考的概率分析演示，非官方气象预报 · <button id="footAbout" class="linklike">数据说明与免责</button></span>
+</footer>
+
+<div id="drawer" class="drawer"><div id="drawerBody"></div></div>
+
+<div id="modalSubs" class="modal">
+  <div class="modal-box">
+    <div class="modal-head"><b>反向订阅提醒（本地演示）</b><button class="icon-btn close">✕</button></div>
+    <p class="muted">保存「景观 + 区域 + 日期窗口」条件；每次打开页面按最新数据评估命中。生产版将通过微信小程序订阅消息推送。</p>
+    <div id="subsList"></div>
+    <h4>新建订阅</h4>
+    <div id="subForm"></div>
+  </div>
+</div>
+
+<div id="modalAbout" class="modal">
+  <div class="modal-box wide">
+    <div class="modal-head"><b>关于 / 数据说明</b><button class="icon-btn close">✕</button></div>
+    <div id="aboutBody"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="data/ws-data.js"></script>
+<script src="data/ws-cache.js"></script>
+<script src="js/ws-model.js"></script>
+<script src="js/ws-app.js"></script>
+</body>
+</html>
