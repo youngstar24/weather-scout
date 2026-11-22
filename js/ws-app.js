@@ -115,6 +115,8 @@
       b.addEventListener('click', () => setBase(b.dataset.base));
     });
     setBase('vdark');
+    // 缩放后重绘：放大时显示未命中目的地（默认视图只看命中点）
+    map.on('zoomend', () => drawMap());
   }
 
   /* ---- 高德备用监测：4 秒内无成功瓦片且出现错误 → 切 ArcGIS 街道图 ---- */
@@ -223,35 +225,22 @@
     markersById = {};
     const cred = M.credibility(S.d);
     const lands = [...S.lands];
+    const z = map.getZoom();
+    const showUnlit = z >= 6; // 未命中标记仅在放大后显示，默认视图只看命中点
 
-    // 网格层（仅陆地格点；逐日近似模型）
-    for (const g of gridList()) {
-      const wx = wxOf(g.id);
-      const res = {};
-      let best = null;
-      for (const k of lands) {
-        const r = M.compute(wx, S.d, k, null, dailyTime[S.d]);
-        res[k] = r;
-        if (r && (!best || r.p > best.p)) best = { key: k, ...r };
-      }
-      const lit = best && best.p >= S.thr;
-      const col = lit ? M.probColor(best.p) : '#cfd4d9';
-      const m = L.circleMarker([g.lat, g.lon], {
-        radius: lit ? 15 : 6, fillColor: col, fillOpacity: lit ? cred.opacity : 0.28,
-        stroke: lit && S.d >= 7, color: '#ffffff', weight: 1, dashArray: S.d >= 7 ? '4 4' : null,
-      });
-      const tipLines = lands.length
-        ? lands.map(k => `${M.LANDSCAPES[k].icon} ${M.LANDSCAPES[k].name} <b>${res[k] ? Math.round(res[k].p) : '—'}%</b>（格点近似）`).join('<br>')
-        : '未选择景观';
-      m.bindTooltip(`格点 ${g.lon}°E ${g.lat}°N<br>${tipLines}`, { sticky: true });
-      m.addTo(layerGrid);
-    }
+    // POI / 城市层（默认视图仅显示命中标记，避免密集区域杂乱）
+    const locs = locList();
+    const litCount = locs.reduce((a, loc) => {
+      const best = maxP(computeAll(loc, S.d), lands);
+      return a + (best && best.p >= S.thr ? 1 : 0);
+    }, 0);
+    const showLitLabels = litCount <= 25; // 命中点少时直接标出名称
 
-    // POI / 城市层
-    for (const loc of locList()) {
+    for (const loc of locs) {
       const res = computeAll(loc, S.d);
       const best = maxP(res, lands);
       const lit = best && best.p >= S.thr;
+      if (!lit && !showUnlit) continue;
       const col = lit ? M.probColor(best.p) : '#b9c0c7';
       // 命中标记的光晕（借鉴参考示例）
       if (lit) {
@@ -260,14 +249,21 @@
         }).addTo(layerLocs);
       }
       const m = L.circleMarker([loc.lat, loc.lon], {
-        radius: loc.kind === 'poi' ? (lit ? 9 : 6) : (lit ? 7 : 5),
-        fillColor: lit ? col : '#dde2e7', fillOpacity: 0.95,
-        color: '#ffffff', weight: 1.5,
+        radius: loc.kind === 'poi' ? (lit ? 9 : 4) : (lit ? 7 : 3.5),
+        fillColor: lit ? col : '#c6cdd5', fillOpacity: lit ? 0.95 : 0.5,
+        color: '#ffffff', weight: lit ? 1.5 : 0.8,
       });
       const tip = best
-        ? `${M.LANDSCAPES[best.key].icon} <b>${esc(loc.name)}</b>（${esc(loc.prov)}）<br>${M.LANDSCAPES[best.key].name} <b>${Math.round(best.p)}%</b> · ${best.quality} · 可信度${M.credibility(S.d).level}`
+        ? `${M.LANDSCAPES[best.key].icon} <b>${esc(loc.name)}</b>（${esc(loc.prov)}）<br>${M.LANDSCAPES[best.key].name} <b>${Math.round(best.p)}%</b> · ${best.quality} · 可信度${cred.level}`
         : `<b>${esc(loc.name)}</b>（${esc(loc.prov)}）`;
-      m.bindTooltip(tip, { direction: 'top' });
+      // Leaflet 单 marker 仅支持一个 tooltip：命中点在命中数 ≤25 时用常驻简标，否则悬停详标
+      if (lit && showLitLabels) {
+        m.bindTooltip(`${M.LANDSCAPES[best.key].icon} <b>${esc(loc.name)}</b> ${Math.round(best.p)}%`, {
+          permanent: true, direction: 'top', className: 'lit-label',
+        });
+      } else {
+        m.bindTooltip(tip, { direction: 'top' });
+      }
       m.on('click', () => openDetail(loc));
       m.addTo(layerLocs);
       markersById[loc.id] = m;
@@ -279,7 +275,7 @@
     const cred = M.credibility(S.d);
     $('#legend').innerHTML = `
       <div class="lg-row"><span class="lg-bar"></span><span>0%</span><span>50%</span><span>100%</span></div>
-      <div class="lg-row small">阈值 ${S.thr}% 以下置灰 · 圆点越大/颜色越深概率越高</div>
+      <div class="lg-row small">仅显示命中目的地（≥${S.thr}%，带光晕与名称）；放大地图可查看周边未命中点</div>
       <div class="lg-row small">可信度：<b style="color:${cred.color}">${cred.level}</b>（${S.d <= 2 ? 'D0–2' : S.d <= 6 ? 'D3–6' : 'D7–15'}，时效越远越弱）</div>
       ${lands.length ? `<div class="lg-row small">已选：${lands.map(l => `${l.icon}${l.name}`).join(' · ')}</div>` : '<div class="lg-row small">点击上方景观标签点亮地图</div>'}`;
   }

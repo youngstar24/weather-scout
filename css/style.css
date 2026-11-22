@@ -81,6 +81,12 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 11px; font-weight: 600; text-align: center; white-space: nowrap;
   text-shadow: 0 0 4px rgba(8, 21, 39, 0.9);
 }
+.lit-label {
+  background: none; border: none; box-shadow: none;
+  color: #fff; font-size: 11px; font-weight: 700; text-align: center; white-space: nowrap;
+  text-shadow: 0 0 3px rgba(4, 12, 24, 0.95);
+}
+.lit-label::before { display: none; }
 #baseSwitch {
   position: absolute; top: 10px; right: 10px; z-index: 600;
   background: rgba(255,255,255,.95); border: 1px solid #e3e8ee; border-radius: 10px;
