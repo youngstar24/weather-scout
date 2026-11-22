@@ -115,8 +115,10 @@
       b.addEventListener('click', () => setBase(b.dataset.base));
     });
     setBase('vdark');
-    // 缩放后重绘：放大时显示未命中目的地（默认视图只看命中点）
+    // 缩放后重绘：放大时显示未命中目的地（默认视图只看命中点）；尺寸/方向变化重算标记尺寸
     map.on('zoomend', () => drawMap());
+    map.on('resize', () => drawMap());
+    window.addEventListener('orientationchange', () => setTimeout(() => drawMap(), 300));
   }
 
   /* ---- 高德备用监测：4 秒内无成功瓦片且出现错误 → 切 ArcGIS 街道图 ---- */
@@ -227,6 +229,8 @@
     const lands = [...S.lands];
     const z = map.getZoom();
     const showUnlit = z >= 6; // 未命中标记仅在放大后显示，默认视图只看命中点
+    const phone = window.innerWidth < 640;
+    const R = phone ? 1.45 : 1; // 手机端标记放大系数
 
     // POI / 城市层（默认视图仅显示命中标记，避免密集区域杂乱）
     const locs = locList();
@@ -234,7 +238,8 @@
       const best = maxP(computeAll(loc, S.d), lands);
       return a + (best && best.p >= S.thr ? 1 : 0);
     }, 0);
-    const showLitLabels = litCount <= 25; // 命中点少时直接标出名称
+    // 手机屏窄、常驻标签易重叠：命中 ≤8 个才常驻显示名称，其余点击查看
+    const showLitLabels = litCount <= (phone ? 8 : 25);
 
     for (const loc of locs) {
       const res = computeAll(loc, S.d);
@@ -245,11 +250,11 @@
       // 命中标记的光晕（借鉴参考示例）
       if (lit) {
         L.circleMarker([loc.lat, loc.lon], {
-          radius: 17, fillColor: col, fillOpacity: 0.14, stroke: false, interactive: false,
+          radius: 17 * R, fillColor: col, fillOpacity: 0.14, stroke: false, interactive: false,
         }).addTo(layerLocs);
       }
       const m = L.circleMarker([loc.lat, loc.lon], {
-        radius: loc.kind === 'poi' ? (lit ? 9 : 4) : (lit ? 7 : 3.5),
+        radius: (loc.kind === 'poi' ? (lit ? 9 : 4) : (lit ? 7 : 3.5)) * R,
         fillColor: lit ? col : '#c6cdd5', fillOpacity: lit ? 0.95 : 0.5,
         color: '#ffffff', weight: lit ? 1.5 : 0.8,
       });
